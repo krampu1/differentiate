@@ -15,7 +15,7 @@ int main() {
     Node *tree = buff_to_tree(buff);
     assert(tree != nullptr);
 
-    printf("%f", calc(tree));
+    printf("=%f", calc(tree));
 
     free(buff);
     del_node(tree);
