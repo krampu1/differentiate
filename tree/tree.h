@@ -6,6 +6,9 @@ enum OP_type {
     ADD = 2,
     SUB = 3,
     DIV = 4,
+    SIN = 5,
+    COS = 6,
+    LN  = 7,
 };
 
 enum Vertex_type {

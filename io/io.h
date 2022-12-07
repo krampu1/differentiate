@@ -18,4 +18,6 @@ void dell_speces(char *buff);
 
 Node * buff_to_tree(const char *buff);
 
+void print_tree(Node *node);
+
 #endif

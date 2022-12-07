@@ -16,6 +16,8 @@ static Node * read_brackets(const char **ptr);
 
 static Node * read_number(const char **ptr);
 
+static void _case_operator(const char *op);
+
 static size_t get_file_size(FILE * ptr_file) {
     assert(ptr_file != nullptr);
 
@@ -240,6 +242,22 @@ static Node * read_mul_div(const char **ptr) {
     return node;
 }
 
+#define read_function(func_name, func_type) (strncmp(*ptr, (func_name), sizeof((func_name)) - 1) == 0) {\
+                                                *ptr += sizeof((func_name)) - 1;                        \
+                                                                                                        \
+                                                node = (Node *)calloc(1, sizeof(Node));                 \
+                                                assert(node != nullptr);                                \
+                                                node_init(node);                                        \
+                                                                                                        \
+                                                node->type = OP;                                        \
+                                                node->value.op = func_type;                             \
+                                                                                                        \
+                                                node->left = read_add_sub(ptr);                         \
+                                                                                                        \
+                                                assert(**ptr == ')');                                   \
+                                                (*ptr)++;                                               \
+                                            }
+
 static Node * read_brackets(const char **ptr) {
     assert(ptr != nullptr);
     assert(*ptr != nullptr);
@@ -255,6 +273,9 @@ static Node * read_brackets(const char **ptr) {
         assert(**ptr == ')');
         (*ptr)++;
     }
+    else if read_function("sin(", SIN)
+    else if read_function("cos(", COS)
+    else if read_function("ln(",  LN)
     else {
         node = read_number(ptr);
     }
@@ -284,4 +305,56 @@ static Node * read_number(const char **ptr) {
     node->value.number = number;
     
     return node;
+}
+
+static void _case_operator(const char *op, Node *node) {
+    assert(node != nullptr);
+
+    printf("(");
+    print_tree(node->left);
+    printf("%s", op);
+    print_tree(node->right);
+    printf(")");
+}
+
+static void _case_func(const char *func, Node *node) {
+    assert(node != nullptr);
+
+    printf("%s(", func);
+    print_tree(node->left);
+    printf(")");
+}
+
+#define case_operator(op, op_type, node)    case op_type:                 \
+                                                _case_operator(op, node); \
+                                                break;
+
+#define case_func(func, func_type, node)    case func_type :              \
+                                                _case_func(func, node);   \
+                                                break;
+
+void print_tree(Node *node) {
+    assert(node != nullptr);
+
+    if (node->type == NUM) {
+        printf("%lf", node->value.number);
+    } 
+    else if (node->type == OP) {
+        switch (node->value.op) {
+            case_operator("*", MUL, node);
+            case_operator("+", ADD, node);
+            case_operator("-", SUB, node);
+            case_operator("/", DIV, node);
+
+            case_func("sin", SIN, node);
+            case_func("cos", COS, node);
+            case_func("ln",  LN,  node);
+            
+            default:
+                printf("!node type op not exist: %d!", node->value.op);
+        }
+    }
+    else {
+        printf("error");
+    }
 }
