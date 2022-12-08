@@ -27,8 +27,6 @@
 
 #define ln(node)         create_op_node(LN, node)
 
-static Node * create_op_node(OP_type op_type, const char * left, Node *right);
-
 static Node * create_op_node(OP_type op_type, double left, Node *right);
 
 static Node * create_op_node(OP_type op_type, Node *node);
@@ -73,8 +71,10 @@ Node * diffirentiate(Node *node) {
                 break;
             case LN:
                 new_node = div(1, LEFT);
+                break;
             case POW:
-                new_node = mul(pow("e", mul(RIGHT, ln(LEFT))), DIF(mul(RIGHT, ln(LEFT))));
+                new_node = mul(node, DIF(mul(RIGHT, ln(LEFT))));
+                break;
             default:
                 printf("node type op not exist: %d", node->value.op);
         }
@@ -139,29 +139,6 @@ static Node * create_op_node(OP_type op_type, double left, Node *right) {
     double_node->value.number = left;
 
     node->left  = double_node;
-    node->right = create_cpy_node(right);
-
-    return node;
-}
-
-static Node * create_op_node(OP_type op_type, const char * left, Node *right) {
-    assert(left  != nullptr);
-    assert(right != nullptr);
-
-    Node *node = (Node *)calloc(1, sizeof(Node));
-    node_init(node);
-
-    node->type     = OP;
-    node->value.op = op_type;
-
-    Node *var_node = (Node *)calloc(1, sizeof(Node));
-    assert(var_node != nullptr);
-    node_init(var_node);
-
-    var_node->type         = VAR;
-    strncpy(var_node->value.variable, left, MAX_VAR_SIZE - 1); // add '\0' at end of the varible
-
-    node->left  = var_node;
     node->right = create_cpy_node(right);
 
     return node;
