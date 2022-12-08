@@ -1,6 +1,10 @@
 #ifndef TREEH
 #define TREEH
 
+#include <stdlib.h>
+
+const size_t MAX_VAR_SIZE = 10;
+
 enum OP_type {
     MUL = 1,
     ADD = 2,
@@ -9,6 +13,7 @@ enum OP_type {
     SIN = 5,
     COS = 6,
     LN  = 7,
+    POW = 8,
 };
 
 enum Vertex_type {
@@ -20,7 +25,7 @@ enum Vertex_type {
 union Vertex_value_type {
     OP_type     op;
     double      number;
-    const char *variable;
+    char        variable[MAX_VAR_SIZE];
 };
 
 struct Node {

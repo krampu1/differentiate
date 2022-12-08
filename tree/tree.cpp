@@ -1,10 +1,11 @@
 #include "tree.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 void node_init(Node *node) {
     node->type         = (Vertex_type)0;
-    node->value.number = 0;
+    memset(&(node->value), 0, sizeof(node->value));
 
     node->left  = nullptr;
     node->right = nullptr;

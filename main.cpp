@@ -2,6 +2,7 @@
 #include "main.h"
 #include "io/io.h"
 #include "tree/tree.h"
+#include "differentiate/differentiate.h"
 
 int main() {
     char *buff = nullptr;
@@ -10,7 +11,7 @@ int main() {
 
     dell_speces(buff);
 
-    printf("%s", buff);
+    fprintf(stderr, "%s", buff);
 
     Node *tree = buff_to_tree(buff);
     assert(tree != nullptr);
@@ -19,6 +20,11 @@ int main() {
     
     printf("=");
     print_tree(tree);
+    printf("\n");
+
+    Node *diff = diffirentiate(tree);
+
+    print_tree(diff);
     printf("\n");
 
     free(buff);

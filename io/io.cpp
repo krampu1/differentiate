@@ -12,11 +12,13 @@ static Node * read_add_sub(const char **ptr);
 
 static Node * read_mul_div(const char **ptr);
 
-static Node * read_brackets(const char **ptr);
+static Node * read_brackets_func(const char **ptr);
 
-static Node * read_number(const char **ptr);
+static Node * read_number_var(const char **ptr);
 
 static void _case_operator(const char *op);
+
+static Node * read_pow(const char **ptr);
 
 static size_t get_file_size(FILE * ptr_file) {
     assert(ptr_file != nullptr);
@@ -210,7 +212,7 @@ static Node * read_mul_div(const char **ptr) {
     assert(ptr != nullptr);
     assert(*ptr != nullptr);
 
-    Node *node  = read_brackets(ptr);
+    Node *node  = read_pow(ptr);
     assert(node != nullptr);
 
     while (**ptr == '*' || **ptr == '/') {
@@ -242,6 +244,35 @@ static Node * read_mul_div(const char **ptr) {
     return node;
 }
 
+static Node * read_pow(const char **ptr) {
+    assert(ptr != nullptr);
+    assert(*ptr != nullptr);
+
+    Node *node  = read_brackets_func(ptr);
+    assert(node != nullptr);
+
+    while (**ptr == '^') {
+        char op = **ptr;
+        (*ptr)++;
+
+        Node *added_node = read_pow(ptr);
+        assert(added_node != nullptr);
+
+        Node *new_node = (Node *)calloc(1, sizeof(Node));
+        assert(new_node != nullptr);
+
+        new_node->type = OP;
+        new_node->value.op = POW;
+
+        new_node->left  = node;
+        new_node->right = added_node;
+
+        node = new_node;
+    }
+
+    return node;
+}
+
 #define read_function(func_name, func_type) (strncmp(*ptr, (func_name), sizeof((func_name)) - 1) == 0) {\
                                                 *ptr += sizeof((func_name)) - 1;                        \
                                                                                                         \
@@ -258,7 +289,7 @@ static Node * read_mul_div(const char **ptr) {
                                                 (*ptr)++;                                               \
                                             }
 
-static Node * read_brackets(const char **ptr) {
+static Node * read_brackets_func(const char **ptr) {
     assert(ptr != nullptr);
     assert(*ptr != nullptr);
 
@@ -277,32 +308,48 @@ static Node * read_brackets(const char **ptr) {
     else if read_function("cos(", COS)
     else if read_function("ln(",  LN)
     else {
-        node = read_number(ptr);
+        node = read_number_var(ptr);
     }
     
     return node;
 }
 
-static Node * read_number(const char **ptr) {
+static Node * read_number_var(const char **ptr) {
     assert(ptr != nullptr);
     assert(*ptr != nullptr);
-
-    assert(isdigit( **ptr));
-    double number = **ptr - '0';
-    (*ptr)++;
-    
-    while (isdigit(**ptr)) {
-        number *= 10;
-        number += **ptr - '0';
-        (*ptr)++;
-    }
 
     Node *node = (Node *)calloc(1, sizeof(Node));
     assert(node != nullptr);
     node_init(node);
 
-    node->type         = NUM;
-    node->value.number = number;
+    if (isdigit(**ptr)) {
+        node->type         = NUM;
+        node->value.number = 0;
+
+        node->value.number = **ptr - '0';
+        (*ptr)++;
+        
+        while (isdigit(**ptr)) {
+            node->value.number *= 10;
+            node->value.number += **ptr - '0';
+            (*ptr)++;
+        }        
+    } else {
+        node->type  = VAR;
+        char *var_ptr = node->value.variable;
+
+        while (isalpha(**ptr) || isdigit(**ptr)) {
+            assert((var_ptr - node->value.variable) < MAX_VAR_SIZE);
+            *var_ptr = **ptr;
+            var_ptr++;
+            (*ptr)++;
+        }
+        
+        assert((var_ptr - node->value.variable) < MAX_VAR_SIZE);
+        *var_ptr = 0;
+
+        
+    }
     
     return node;
 }
@@ -338,13 +385,13 @@ void print_tree(Node *node) {
 
     if (node->type == NUM) {
         printf("%lf", node->value.number);
-    } 
-    else if (node->type == OP) {
+    } else if (node->type == OP) {
         switch (node->value.op) {
             case_operator("*", MUL, node);
             case_operator("+", ADD, node);
             case_operator("-", SUB, node);
             case_operator("/", DIV, node);
+            case_operator("^", POW, node);
 
             case_func("sin", SIN, node);
             case_func("cos", COS, node);
@@ -353,8 +400,9 @@ void print_tree(Node *node) {
             default:
                 printf("!node type op not exist: %d!", node->value.op);
         }
-    }
-    else {
+    } else if (node->type == VAR) {
+        printf("%s", node->value.variable);
+    } else {
         printf("error");
     }
 }
