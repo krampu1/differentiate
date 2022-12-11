@@ -384,7 +384,7 @@ void print_tree(Node *node) {
     assert(node != nullptr);
 
     if (node->type == NUM) {
-        printf("%lf", node->value.number);
+        printf("%lg", node->value.number);
     } else if (node->type == OP) {
         switch (node->value.op) {
             case_operator("*", MUL, node);
