@@ -22,11 +22,26 @@ int main() {
     print_tree(tree);
     printf("\n");
 
-    Node *diff = diffirentiate(tree);
+    FILE *file = fopen(TEX_FILE_NAME, "w");
+    assert(file != nullptr);
 
-    print_tree(diff);
+    tex_init(file);
+
+    fprintf(file, "\nрассмотрим такое выражение:\n\n");
+    print_tree_to_tex(file, tree);
+
+    fprintf(file, "\n\nвычислим его производную:\n\n");
+    Node *der = diffirentiate(tree, file);
+    print_tree(der);
     printf("\n");
+
+    fprintf(file, "вычислим его производную:\n\n");
+    fprintf(file, "(");
+    print_tree_to_tex(file, tree);
+    fprintf(file, ")\'=");    
+    print_tree_to_tex(file, der);
 
     free(buff);
     del_node(tree);
+    tex_del(file);
 }

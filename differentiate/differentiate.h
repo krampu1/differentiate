@@ -2,7 +2,8 @@
 #define DIFFERENTIATE
 
 #include "../tree/tree.h"
+#include <stdio.h>
 
-Node * diffirentiate(Node *node);
+Node * diffirentiate(Node *node, FILE *file);
 
 #endif

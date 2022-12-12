@@ -20,6 +20,8 @@ static void _case_operator(const char *op);
 
 static Node * read_pow(const char **ptr);
 
+static void _print_tree_to_tex(FILE *file, Node *node);
+
 static size_t get_file_size(FILE * ptr_file) {
     assert(ptr_file != nullptr);
 
@@ -398,11 +400,137 @@ void print_tree(Node *node) {
             case_func("ln",  LN,  node);
             
             default:
-                printf("!node type op not exist: %d!", node->value.op);
+                fprintf(stderr, "|node type op not exist: %d|\n", node->value.op);
         }
     } else if (node->type == VAR) {
         printf("%s", node->value.variable);
     } else {
-        printf("error");
+        fprintf(stderr, "|error, node type not fount, type : %d|\n", node->type);
     }
+}
+
+void tex_init(FILE *file) {
+    assert(file != nullptr);
+
+    fprintf(file,   "\\documentclass{article}\n"
+                    "\\usepackage[utf8]{inputenc}\n"
+                    "\\usepackage{amsmath}\n"
+                    "\\usepackage[english, russian]{babel}\n"
+                    "\\usepackage{euscript}\n"
+                    "\\usepackage{mathrsfs}\n"
+                    "\\usepackage{amssymb}\n"
+                    "\\usepackage{graphicx}\n"
+                    "\\usepackage[12pt]{extsizes}\n"
+                    "\\renewcommand{\\familydefault}{\\rmdefault}\n"
+                    "\\begin{document}\n");
+}
+
+void tex_del(FILE *file) {
+    assert(file != nullptr);
+
+    fprintf(file, "\n\n\\end {document}");
+
+    fclose(file);
+}
+
+void print_tree_to_tex(FILE *file, Node *node) {
+    assert(file != nullptr);
+    assert(node != nullptr);
+
+    _print_tree_to_tex(file, node);
+}
+
+static void _case_tex(FILE *file, OP_type op_type, Node *node) {
+    assert(node != nullptr);
+
+    fprintf(file, "(");
+    switch (op_type) {
+        case MUL:
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, "\\times");
+            _print_tree_to_tex(file, node->right);
+            break;
+        case ADD:
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, "+");
+            _print_tree_to_tex(file, node->right);
+            break;
+        case SUB:
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, "-");
+            _print_tree_to_tex(file, node->right);
+            break;
+        case DIV:
+            fprintf(file, "\\frac{");
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, "}{");
+            _print_tree_to_tex(file, node->right);
+            fprintf(file, "}");
+            break;
+        case POW:
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, "^");
+            _print_tree_to_tex(file, node->right);
+            break;
+        case SIN:
+            fprintf(file, "\\sin(");
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, ")");
+            break;
+        case COS:
+            fprintf(file, "\\cos(");
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, ")");
+            break;
+        case LN:
+            fprintf(file, "\\ln(");
+            _print_tree_to_tex(file, node->left);
+            fprintf(file, ")");
+            break;
+        default:
+            fprintf(file, "error");
+            fprintf(stderr, "error, op_type not found: %d", op_type);
+    }
+    fprintf(file, ")");
+}
+
+#define case_tex(op_type, node) case op_type:                       \
+                                    _case_tex(file, op_type, node); \
+                                    break;
+
+static void _print_tree_to_tex(FILE *file, Node *node) {
+    assert(file != nullptr);
+    assert(node != nullptr);
+
+    if (node->type == NUM) {
+        fprintf(file, "%lg", node->value.number);
+    } else if (node->type == OP) {
+        switch (node->value.op) {
+            case_tex(MUL, node);
+            case_tex(ADD, node);
+            case_tex(SUB, node);
+            case_tex(DIV, node);
+            case_tex(POW, node);
+            case_tex(SIN, node);
+            case_tex(COS, node);
+            case_tex(LN,  node);
+            
+            default:
+                fprintf(stderr, "!node type op not exist: %d!\n", node->value.op);
+        }
+    } else if (node->type == VAR) {
+        fprintf(file, "%s", node->value.variable);
+    } else {
+        fprintf(stderr, "|error, node type not found, type: %d|\n", node->type);
+    }
+}
+
+void differentiate_print(FILE *file, Node *node, Node *new_node) {
+    assert(file     != nullptr);
+    assert(node     != nullptr);
+    assert(new_node != nullptr);
+    fprintf(file, "(");
+    print_tree_to_tex(file, node);
+    fprintf(file, ")' = ");
+    print_tree_to_tex(file, new_node);
 }

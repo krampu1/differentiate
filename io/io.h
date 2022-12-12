@@ -20,4 +20,12 @@ Node * buff_to_tree(const char *buff);
 
 void print_tree(Node *node);
 
+void print_tree_to_tex(FILE *file, Node *node);
+
+void tex_init(FILE *file);
+
+void tex_del(FILE *file);
+
+void differentiate_print(FILE *file, Node *node, Node *new_node);
+
 #endif

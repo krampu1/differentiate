@@ -1,5 +1,6 @@
 #include "differentiate.h"
 #include "../tree/tree.h"
+#include "../io/io.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,7 +10,7 @@
 
 #define RIGHT node->right
 
-#define DIF(node) diffirentiate(node)
+#define DIF(node) diffirentiate(node, file)
 
 #define add(left, right) create_op_node(ADD, left, right)
 
@@ -35,7 +36,7 @@ static Node * create_op_node(OP_type op_type, Node *left, Node *right);
 
 Node * create_cpy_node(Node *node);
 
-Node * diffirentiate(Node *node) {
+Node * diffirentiate(Node *node, FILE *file = nullptr) {
     assert(node != nullptr);
 
     Node *new_node = nullptr;
@@ -84,9 +85,14 @@ Node * diffirentiate(Node *node) {
         node_init(new_node);
 
         new_node->type         = NUM;
-        new_node->value.number = 1; // (variable)' = 1
+        new_node->value.number = 1; // (varible)' = 1
 
         return new_node;
+    }
+
+    if (file != nullptr) {
+        differentiate_print(file, node, new_node);
+        fprintf(file, "\n\n");
     }
 
     return new_node;
