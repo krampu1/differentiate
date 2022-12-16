@@ -3,6 +3,7 @@
 #include "io/io.h"
 #include "tree/tree.h"
 #include "differentiate/differentiate.h"
+#include "teylor_row/teylor_row.h"
 
 int main() {
     char *buff = nullptr;
@@ -11,16 +12,8 @@ int main() {
 
     dell_speces(buff);
 
-    fprintf(stderr, "%s", buff);
-
     Node *tree = buff_to_tree(buff);
     assert(tree != nullptr);
-
-    //printf("=%f", calc(tree));
-    
-    printf("=");
-    print_tree(tree);
-    printf("\n");
 
     FILE *file = fopen(TEX_FILE_NAME, "w");
     assert(file != nullptr);
@@ -28,18 +21,29 @@ int main() {
     tex_init(file);
 
     fprintf(file, "\nрассмотрим такое выражение:\n\n");
+    fprintf(file, "$$");
     print_tree_to_tex(file, tree);
+    fprintf(file, "$$");
 
     fprintf(file, "\n\nвычислим его производную:\n\n");
-    Node *der = diffirentiate(tree, file);
-    print_tree(der);
-    printf("\n");
+    Node *der = differentiate(tree, file);
+    assert(der != nullptr);
 
-    fprintf(file, "вычислим его производную:\n\n");
-    fprintf(file, "(");
-    print_tree_to_tex(file, tree);
-    fprintf(file, ")\'=");    
+    Node *simp = tree_simplification(der);
+    assert(simp != nullptr);
+
+    fprintf(file, "упростим:\n\n");
+    fprintf(file, "$$");
     print_tree_to_tex(file, der);
+    fprintf(file, "=");
+    print_tree_to_tex(file, simp);
+    fprintf(file, "$$\n\n");
+
+    Node * teylor = teylor_row(tree, 0);
+
+    fprintf(file, "Вычислим разложение по Тейлору:\n\n$$");
+    print_tree_to_tex(file, teylor);
+    fprintf(file, "$$");
 
     free(buff);
     del_node(tree);

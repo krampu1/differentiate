@@ -10,7 +10,7 @@
 
 #define RIGHT node->right
 
-#define DIF(node) diffirentiate(node, file)
+#define DIF(node) differentiate(node, file)
 
 #define add(left, right) create_op_node(ADD, left, right)
 
@@ -34,9 +34,7 @@ static Node * create_op_node(OP_type op_type, Node *node);
 
 static Node * create_op_node(OP_type op_type, Node *left, Node *right);
 
-Node * create_cpy_node(Node *node);
-
-Node * diffirentiate(Node *node, FILE *file = nullptr) {
+Node * differentiate(Node *node, FILE *file) {
     assert(node != nullptr);
 
     Node *new_node = nullptr;
@@ -53,7 +51,7 @@ Node * diffirentiate(Node *node, FILE *file = nullptr) {
     } else if (node->type == OP) {
         switch (node->value.op) {
             case MUL:
-                new_node = add(mul(DIF(LEFT), RIGHT), mul(LEFT, DIF(RIGHT)));
+                new_node = add(mul(DIF(LEFT), create_cpy_node_r(RIGHT)), mul(create_cpy_node_r(LEFT), DIF(RIGHT)));
                 break;
             case ADD:
                 new_node = add(DIF(LEFT), DIF(RIGHT));
@@ -62,22 +60,22 @@ Node * diffirentiate(Node *node, FILE *file = nullptr) {
                 new_node = sub(DIF(LEFT), DIF(RIGHT));
                 break;
             case DIV:
-                new_node = div(sub(mul(DIF(LEFT), RIGHT), mul(LEFT, DIF(RIGHT))), mul(RIGHT, RIGHT));
+                new_node = div(sub(mul(DIF(LEFT), create_cpy_node_r(RIGHT)), mul(create_cpy_node_r(LEFT), DIF(RIGHT))), mul(create_cpy_node_r(RIGHT), create_cpy_node_r(RIGHT)));
                 break;
             case SIN:
-                new_node = cos(LEFT);
+                new_node = mul(cos(create_cpy_node_r(LEFT)), DIF(LEFT));
                 break;
             case COS:
-                new_node = mul(-1, sin(node));
+                new_node = mul(mul(-1, sin(create_cpy_node_r(LEFT))), DIF(LEFT));
                 break;
             case LN:
-                new_node = div(1, LEFT);
+                new_node = mul(div(1, create_cpy_node_r(LEFT)), DIF(LEFT));
                 break;
             case POW:
-                new_node = mul(node, DIF(mul(RIGHT, ln(LEFT))));
+                new_node = mul(create_cpy_node_r(node), add(mul(DIF(RIGHT), ln(create_cpy_node_r(LEFT))), mul(create_cpy_node_r(RIGHT), mul(div(1, create_cpy_node_r(LEFT)), DIF(LEFT)))));
                 break;
             default:
-                printf("node type op not exist: %d", node->value.op);
+                fprintf(stderr, "node type op not exist: %d", node->value.op);
         }
     } else if (node->type == VAR) {
         new_node = (Node *)calloc(1, sizeof(Node));
@@ -108,8 +106,8 @@ static Node * create_op_node(OP_type op_type, Node *left, Node *right) {
     node->type     = OP;
     node->value.op = op_type;
 
-    node->left  = create_cpy_node(left);
-    node->right = create_cpy_node(right);
+    node->left  = left;
+    node->right = right;
 
     return node;
 }
@@ -123,7 +121,7 @@ static Node * create_op_node(OP_type op_type, Node *node) {
     new_node->type     = OP;
     new_node->value.op = op_type;
 
-    new_node->left = create_cpy_node(node);
+    new_node->left = node;
 
     return new_node;
 }
@@ -145,18 +143,7 @@ static Node * create_op_node(OP_type op_type, double left, Node *right) {
     double_node->value.number = left;
 
     node->left  = double_node;
-    node->right = create_cpy_node(right);
+    node->right = right;
 
     return node;
-}
-
-Node * create_cpy_node(Node *node) {
-    assert(node != nullptr);
-
-    Node *new_node = (Node *)calloc(1, sizeof(Node));
-    assert(new_node != nullptr);
-
-    *new_node = *node;
-
-    return new_node;
 }

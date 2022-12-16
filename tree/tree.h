@@ -5,6 +5,8 @@
 
 const size_t MAX_VAR_SIZE = 10;
 
+const double EPSILON      = 1e-10;
+
 enum OP_type {
     MUL = 1,
     ADD = 2,
@@ -40,6 +42,12 @@ void node_init(Node *node);
 
 void del_node(Node *node);
 
-double calc(Node *node);
+double calc(Node *node, double var_val = 0);
+
+Node * tree_simplification(Node *node);
+
+Node * create_cpy_node(Node *node);
+
+Node * create_cpy_node_r(Node * node);
 
 #endif

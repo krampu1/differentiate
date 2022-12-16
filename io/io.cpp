@@ -529,8 +529,9 @@ void differentiate_print(FILE *file, Node *node, Node *new_node) {
     assert(file     != nullptr);
     assert(node     != nullptr);
     assert(new_node != nullptr);
-    fprintf(file, "(");
+    fprintf(file, "$$(");
     print_tree_to_tex(file, node);
     fprintf(file, ")' = ");
     print_tree_to_tex(file, new_node);
+    fprintf(file, "$$");
 }
